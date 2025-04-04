@@ -1,23 +1,26 @@
+#include <Arduino.h>
 #define UP_PIN 2        // Pin to move cabin up
 #define DOWN_PIN 3      // Pin to move cabin down
-#define LIMIT_TOP 4     // Sensor at top limit
-#define LIMIT_BOTTOM 5  // Sensor at bottom limit
+#define FLOOR_SENSOR_1 4     
+#define FLOOR_SENSOR_2 5
+#define FLOOR_SENSOR_3 6
 
 
 void setup() {
   pinMode(UP_PIN, OUTPUT);
   pinMode(DOWN_PIN, OUTPUT);
-  pinMode(LIMIT_TOP, INPUT_PULLUP);
-  pinMode(LIMIT_BOTTOM, INPUT_PULLUP);
+  pinMode(FLOOR_SENSOR_1, INPUT);
+  pinMode(FLOOR_SENSOR_2, INPUT);
+  pinMode  (FLOOR_SENSOR_3, INPUT);
   
 }
 
 void loop() {
-  if (digitalRead(LIMIT_BOTTOM) == LOW) {   // Bottom reached
+  if (digitalRead(FLOOR_SENSOR_1) == HIGH) {   
     digitalWrite(UP_PIN, HIGH);             // Move up
     digitalWrite(DOWN_PIN, LOW);
-  } else if (digitalRead(LIMIT_TOP) == LOW) { // Top reached
-    digitalWrite(DOWN_PIN, HIGH);           // Move down
+  } else if (digitalRead(FLOOR_SENSOR_2) == HIGH) { // Top reached
+    digitalWrite(DOWN_PIN, LOW);           // Stop motor
     digitalWrite(UP_PIN, LOW);
   } else {
     digitalWrite(UP_PIN, LOW);              // Stop movement
