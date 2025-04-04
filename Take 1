@@ -22,9 +22,6 @@ void loop() {
   } else if (digitalRead(FLOOR_SENSOR_2) == HIGH) { // Top reached
     digitalWrite(DOWN_PIN, LOW);           // Stop motor
     digitalWrite(UP_PIN, LOW);
-  } else {
-    digitalWrite(UP_PIN, LOW);              // Stop movement
-    digitalWrite(DOWN_PIN, LOW);
-  }
+  } 
   
 }
