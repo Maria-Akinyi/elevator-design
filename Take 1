@@ -1,0 +1,27 @@
+#define UP_PIN 2        // Pin to move cabin up
+#define DOWN_PIN 3      // Pin to move cabin down
+#define LIMIT_TOP 4     // Sensor at top limit
+#define LIMIT_BOTTOM 5  // Sensor at bottom limit
+
+
+void setup() {
+  pinMode(UP_PIN, OUTPUT);
+  pinMode(DOWN_PIN, OUTPUT);
+  pinMode(LIMIT_TOP, INPUT_PULLUP);
+  pinMode(LIMIT_BOTTOM, INPUT_PULLUP);
+  
+}
+
+void loop() {
+  if (digitalRead(LIMIT_BOTTOM) == LOW) {   // Bottom reached
+    digitalWrite(UP_PIN, HIGH);             // Move up
+    digitalWrite(DOWN_PIN, LOW);
+  } else if (digitalRead(LIMIT_TOP) == LOW) { // Top reached
+    digitalWrite(DOWN_PIN, HIGH);           // Move down
+    digitalWrite(UP_PIN, LOW);
+  } else {
+    digitalWrite(UP_PIN, LOW);              // Stop movement
+    digitalWrite(DOWN_PIN, LOW);
+  }
+  
+}
