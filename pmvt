@@ -1,0 +1,94 @@
+#include <Arduino.h>
+#include <vector>
+#include <algorithm>
+
+// Pin definitions
+const int trigPin = 5;
+const int echoPin = 18;
+const int motorUpPin = 23;
+const int motorDownPin = 19;
+
+// Floor distances (in cm)
+const int groundFloor = 3;
+const int firstFloor = 17;
+const int secondFloor = 31;
+const int tolerance = 2;
+
+int currentFloor = 2; // Starting at the 2nd floor
+std::vector<int> requests; // List to store floor requests
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(motorUpPin, OUTPUT);
+  pinMode(motorDownPin, OUTPUT);
+}
+
+// Function to measure distance
+long getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH);
+  long distance = duration * 0.034 / 2; // Convert to cm
+  return distance;
+}
+
+// Function to move the lift
+void moveLift(String direction) {
+  if (direction == "up") {
+    digitalWrite(motorUpPin, HIGH);
+    digitalWrite(motorDownPin, LOW);
+  } else if (direction == "down") {
+    digitalWrite(motorUpPin, LOW);
+    digitalWrite(motorDownPin, HIGH);
+  }
+}
+
+void stopLift() {
+  digitalWrite(motorUpPin, LOW);
+  digitalWrite(motorDownPin, LOW);
+}
+
+// Function to handle movement to a floor
+void moveToFloor(int targetFloor) {
+  long distance = getDistance();
+  int targetDistance = (targetFloor == 0) ? groundFloor : (targetFloor == 1) ? firstFloor : secondFloor;
+
+  while (distance > targetDistance + tolerance || distance < targetDistance - tolerance) {
+    if (distance > targetDistance) moveLift("down");
+    else moveLift("up");
+    distance = getDistance();
+  }
+  stopLift();
+  currentFloor = targetFloor; // Update the current floor
+}
+
+// Function to sort requests by proximity
+void prioritizeRequests() {
+  std::sort(requests.begin(), requests.end(), [](int a, int b) {
+    return abs(a - currentFloor) < abs(b - currentFloor);
+  });
+}
+
+void loop() {
+  // Handle new requests from Serial input
+  if (Serial.available()) {
+    int floorRequest = Serial.parseInt(); // Parse input (e.g., "0" for ground, "1" for first, etc.)
+    if (floorRequest >= 0 && floorRequest <= 2 && std::find(requests.begin(), requests.end(), floorRequest) == requests.end()) {
+      requests.push_back(floorRequest); // Add request if it's not already in the queue
+      prioritizeRequests(); // Sort requests based on priority
+    }
+  }
+
+  // Process requests
+  if (!requests.empty()) {
+    int nextFloor = requests.front(); // Get the highest-priority request
+    requests.erase(requests.begin()); // Remove it from the queue
+    moveToFloor(nextFloor); // Move to the requested floor
+  }
+}
