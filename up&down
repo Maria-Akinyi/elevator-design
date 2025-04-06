@@ -1,0 +1,85 @@
+#include <Arduino.h>
+
+// Pin definitions
+const int trigPin = 5;
+const int echoPin = 18;
+const int motorUpPin = 23;
+const int motorDownPin = 19;
+
+// Thresholds for floors (in cm)
+const int groundFloor = 3;
+const int firstFloor = 17;
+const int secondFloor = 31;
+
+// Tolerance for distances (to account for small variations)
+const int tolerance = 2;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(motorUpPin, OUTPUT);
+  pinMode(motorDownPin, OUTPUT);
+}
+
+// Function to measure distance
+long getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH);
+  long distance = duration * 0.034 / 2; // Convert to cm
+  return distance;
+}
+
+// Function to move the lift
+void moveLift(String direction) {
+  if (direction == "up") {
+    digitalWrite(motorUpPin, HIGH);
+    digitalWrite(motorDownPin, LOW);
+  } else if (direction == "down") {
+    digitalWrite(motorUpPin, LOW);
+    digitalWrite(motorDownPin, HIGH);
+  }
+}
+
+void stopLift() {
+  digitalWrite(motorUpPin, LOW);
+  digitalWrite(motorDownPin, LOW);
+}
+
+void loop() {
+  long distance = getDistance();
+  Serial.println(distance);
+
+  // Example: Move to a specific floor
+  if (Serial.available()) {
+    String command = Serial.readString();
+
+    if (command == "ground") {
+      while (distance > groundFloor + tolerance || distance < groundFloor - tolerance) {
+        if (distance > groundFloor) moveLift("down");
+        else moveLift("up");
+        distance = getDistance();
+      }
+      stopLift();
+    } else if (command == "first") {
+      while (distance > firstFloor + tolerance || distance < firstFloor - tolerance) {
+        if (distance > firstFloor) moveLift("down");
+        else moveLift("up");
+        distance = getDistance();
+      }
+      stopLift();
+    } else if (command == "second") {
+      while (distance > secondFloor + tolerance || distance < secondFloor - tolerance) {
+        if (distance > secondFloor) moveLift("down");
+        else moveLift("up");
+        distance = getDistance();
+      }
+      stopLift();
+    }
+  }
+}
