@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
 // Pin definitions
-const int trigPin = 5;
-const int echoPin = 18;
-const int motorUpPin = 23;
-const int motorDownPin = 19;
+const int trigPin = 2;
+const int echoPin = 15;
+const int motorUpPin = 27;
+const int motorDownPin = 26;
 
 // Thresholds for floors (in cm)
 const int groundFloor = 3;
@@ -58,8 +58,9 @@ void loop() {
   // Example: Move to a specific floor
   if (Serial.available()) {
     String command = Serial.readString();
-
+    command.trim();
     if (command == "ground") {
+      Serial.println("Moving to ground floor");
       while (distance > groundFloor + tolerance || distance < groundFloor - tolerance) {
         if (distance > groundFloor) moveLift("down");
         else moveLift("up"); //this condition must never happen
@@ -67,6 +68,7 @@ void loop() {
       }
       stopLift();
     } else if (command == "first") {
+      Serial.println("Moving to first floor");
       while (distance > firstFloor + tolerance || distance < firstFloor - tolerance) {
         if (distance > firstFloor) moveLift("down");
         else moveLift("up");
@@ -74,6 +76,7 @@ void loop() {
       }
       stopLift();
     } else if (command == "second") {
+      Serial.println("Moving to second floor");
       while (distance > secondFloor + tolerance || distance < secondFloor - tolerance) {
         if (distance > secondFloor) moveLift("down"); //this condition must never happen
         else moveLift("up");
