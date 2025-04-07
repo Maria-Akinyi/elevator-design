@@ -62,7 +62,7 @@ void loop() {
     if (command == "ground") {
       while (distance > groundFloor + tolerance || distance < groundFloor - tolerance) {
         if (distance > groundFloor) moveLift("down");
-        else moveLift("up");
+        else moveLift("up"); //this condition must never happen
         distance = getDistance();
       }
       stopLift();
@@ -75,7 +75,7 @@ void loop() {
       stopLift();
     } else if (command == "second") {
       while (distance > secondFloor + tolerance || distance < secondFloor - tolerance) {
-        if (distance > secondFloor) moveLift("down");
+        if (distance > secondFloor) moveLift("down"); //this condition must never happen
         else moveLift("up");
         distance = getDistance();
       }
